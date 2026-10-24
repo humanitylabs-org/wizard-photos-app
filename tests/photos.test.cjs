@@ -61,8 +61,8 @@ test('Back up now gives feedback: queued, and what Android is waiting for', asyn
   await p;
   assert.ok(st.queuedAt);
   const html = P.html(st);
-  assert.match(html, /Backup queued · it starts when the phone has Wi-Fi and a charger/);
-  assert.match(html, /to test now, plug in or turn off/);
+  assert.match(html, /Backup queued · Android starts it once it sees Wi-Fi and a charger/);
+  assert.match(html, /Turn off “Wi-Fi only”/);
   assert.match(html, /Queued ✓/);
   st.status = { ...st.status, charge: false, wifi: false };
   assert.match(P.html(st), /Backup queued · starting…/);

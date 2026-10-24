@@ -76,7 +76,7 @@
     const w = [];
     if (s.wifi) w.push('Wi-Fi');
     if (s.charge && !s.lastSync) w.push('a charger (first backup only runs while plugged in)');
-    return w.length ? `Backup queued · it starts when the phone has ${w.join(' and ')}` : 'Backup queued · starting…';
+    return w.length ? `Backup queued · Android starts it once it sees ${w.join(' and ')}` : 'Backup queued · starting…';
   }
   /** The server field shows only when nothing is known: no build-time server and not signed in. */
   const needsServer = s => !!s && !s.connected && !s.server;
@@ -96,8 +96,8 @@
     if (needsServer(s)) parts.push(`<label class="ph-field"><span>Photo server</span><input type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://photos.example.com" data-ph-server value="${esc(st.server || '')}"></label>`);
     parts.push(`<p class="ph-status" data-ph-status role="status">${esc(st.error || summary(s, now))}</p>`);
     const fresh = st.queuedAt && !st.error && (!s.lastSync || s.lastSync < st.queuedAt);
-    if (fresh) parts.push(`<p class="ph-note ph-queued" role="status">${esc(waitingFor(s))}${s.charge && !s.lastSync ? ' · to test now, plug in or turn off “First backup only while charging”' : ''}</p>`);
-    else if (s.enabled && s.message && !st.error) parts.push(`<p class="ph-note">${esc(s.message)}</p>`);
+    if (fresh) parts.push(`<p class="ph-note ph-queued" role="status">${esc(waitingFor(s))}${s.wifi ? ' · stuck while plugged in on Wi-Fi? Turn off “Wi-Fi only” (the private network can look like mobile data to Android)' : ''}</p>`);
+    if (s.enabled && s.message && !st.error) parts.push(`<p class="ph-note">Phone says: ${esc(s.message)}</p>`);
     if (s.needsAccess) parts.push(`<button type="button" class="ph-btn primary" data-ph="permissions">Allow photo access</button>`);
     if (s.limited) parts.push(`<p class="ph-note">Only the photos you picked in Android are visible. <button type="button" class="ph-link" data-ph="permissions">Allow all photos</button></p>`);
     parts.push(sw('data-ph="wifi"', s.wifi, 'Wi-Fi only', s.wifi ? 'Mobile data is never used' : 'Mobile data may be used', busy));
