@@ -34,3 +34,4 @@ button { font: inherit; cursor: pointer; border: 0; }
 .ph-album { display: flex; align-items: center; gap: 12px; padding: 8px 4px; background: transparent; color: var(--wz-text); text-align: left; font-size: 15px; }
 .ph-check { flex: 0 0 20px; height: 20px; border-radius: 6px; border: 1.5px solid var(--wz-text-muted); }
 .ph-album[aria-checked="true"] .ph-check { background: var(--wz-accent); border-color: var(--wz-accent); box-shadow: inset 0 0 0 3px var(--wz-base); }
+.ph-queued { margin-top: 2px; padding: 10px 12px; border-radius: 10px; background: var(--wz-surface); color: var(--wz-text); }
