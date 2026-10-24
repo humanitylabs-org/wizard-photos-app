@@ -1,0 +1,18 @@
+services:
+  photos:
+    image: ghcr.io/humanitylabs-org/wizard-photos-app:0.1.0-alpha.1
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+    read_only: true
+    user: '1000:1000'
+    mem_limit: 64m
+    tmpfs: [/tmp]
+    environment:
+      PHOTOS_APP_PORT: '9418'
+      PHOTOS_APP_HOST: 0.0.0.0
+    x-runtipi:
+      is_main: true
+      internal_port: 9418
+x-runtipi:
+  schema_version: 2
+  overrides: []
