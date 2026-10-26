@@ -51,3 +51,21 @@ test('views: browser explains where backup runs; old app opens its native screen
 test('owner text is escaped', () => {
   assert.equal(P.esc('<img onerror=x>'), '&lt;img onerror=x&gt;');
 });
+
+test('Back up now gives feedback: queued, and what Android is waiting for', async () => {
+  const sent = [];
+  const api = P.client(m => sent.push(m), { set: () => 0, clear: () => {} });
+  const st = { mode: 'v1', status: { v: 1, enabled: true, connected: true, wifi: true, charge: true, lastSync: 0, server: 'https://p.example' } };
+  const p = P.act(st, api, 'run');
+  api.onMessage({ type: 'wizard-os:photos', id: sent[0].id, ok: true, result: st.status });
+  await p;
+  assert.ok(st.queuedAt);
+  const html = P.html(st);
+  assert.match(html, /Backup queued · Android starts it once it sees Wi-Fi and a charger/);
+  assert.match(html, /Turn off “Wi-Fi only”/);
+  assert.match(html, /Queued ✓/);
+  st.status = { ...st.status, charge: false, wifi: false };
+  assert.match(P.html(st), /Backup queued · starting…/);
+  st.status = { ...st.status, lastSync: Date.now() + 1000 };
+  assert.doesNotMatch(P.html(st), /Backup queued/);
+});

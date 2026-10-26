@@ -17,6 +17,20 @@ Photo backup as its own optional Wizard app (one launcher tile). Wizard Settings
 - **Status: alpha.** Backup, de-duplication, permission denial and the switch→sign-in→on path are tested on an Android
   emulator against a disposable Immich; the real fingerprint round trip is proven on the owner's phone.
 
+## Installation order
+
+Update/install the app routes before switching core web to the settings extraction.
+An existing source-served `/photos/` is already an independent app; keep it healthy
+while preparing its managed replacement. Do not start a managed Photos container on
+a port still occupied by that source service. After approved catalog admission,
+`wam install photos` is the fresh-install command and
+`wam app update photos:wizardapps` updates an already-managed installation.
+Confirm `GET /wizard/v1/apps` has id `photos`, URL `/photos/`, and a healthy view
+before updating core. Register/install Food (`usuals`, `/usuals/`) in the same
+apps-first phase. Restoring only the previous core web is sufficient to roll back
+the extraction: no native backup ledger or saved-order migration takes place.
+These are release instructions, not actions performed by this PR.
+
 ## Run locally
 
 ```

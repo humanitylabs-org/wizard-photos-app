@@ -71,6 +71,13 @@
     if (!s.total && !s.lastSync) return 'On · first backup waiting';
     return `On · ${s.total ? `${s.done} of ${s.total} backed up` : 'nothing backed up yet'} · ${ago(s.lastSync, now)}`;
   }
+  /** Why a queued backup has not started: Android waits for these before it runs the job. */
+  function waitingFor(s) {
+    const w = [];
+    if (s.wifi) w.push('Wi-Fi');
+    if (s.charge && !s.lastSync) w.push('a charger (first backup only runs while plugged in)');
+    return w.length ? `Backup queued · Android starts it once it sees ${w.join(' and ')}` : 'Backup queued · starting…';
+  }
   /** The server field shows only when nothing is known: no build-time server and not signed in. */
   const needsServer = s => !!s && !s.connected && !s.server;
 
@@ -88,7 +95,9 @@
       sw('data-ph="enabled"', s.enabled, 'Back up photos', null, busy)];
     if (needsServer(s)) parts.push(`<label class="ph-field"><span>Photo server</span><input type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://photos.example.com" data-ph-server value="${esc(st.server || '')}"></label>`);
     parts.push(`<p class="ph-status" data-ph-status role="status">${esc(st.error || summary(s, now))}</p>`);
-    if (s.enabled && s.message && !st.error) parts.push(`<p class="ph-note">${esc(s.message)}</p>`);
+    const fresh = st.queuedAt && !st.error && (!s.lastSync || s.lastSync < st.queuedAt);
+    if (fresh) parts.push(`<p class="ph-note ph-queued" role="status">${esc(waitingFor(s))}${s.wifi ? ' · stuck while plugged in on Wi-Fi? Turn off “Wi-Fi only” (the private network can look like mobile data to Android)' : ''}</p>`);
+    if (s.enabled && s.message && !st.error) parts.push(`<p class="ph-note">Phone says: ${esc(s.message)}</p>`);
     if (s.needsAccess) parts.push(`<button type="button" class="ph-btn primary" data-ph="permissions">Allow photo access</button>`);
     if (s.limited) parts.push(`<p class="ph-note">Only the photos you picked in Android are visible. <button type="button" class="ph-link" data-ph="permissions">Allow all photos</button></p>`);
     parts.push(sw('data-ph="wifi"', s.wifi, 'Wi-Fi only', s.wifi ? 'Mobile data is never used' : 'Mobile data may be used', busy));
@@ -96,7 +105,7 @@
     parts.push(`<button type="button" class="ph-row" data-ph="albums" aria-expanded="${!!st.albumsOpen}"><span class="ph-tx"><b>Albums</b><small>${esc(albumSub(st))}</small></span><span class="ph-go">${st.albumsOpen ? '⌄' : '›'}</span></button>`);
     if (st.albumsOpen) parts.push(albumsHtml(st));
     const acts = [];
-    if (s.enabled) acts.push(`<button type="button" class="ph-btn" data-ph="run"${busy ? ' disabled' : ''}>Back up now</button>`);
+    if (s.enabled) acts.push(`<button type="button" class="ph-btn" data-ph="run"${busy ? ' disabled' : ''}>${st.busy === 'run' ? 'Starting…' : st.queuedAt && fresh ? 'Queued ✓ · tap to retry' : 'Back up now'}</button>`);
     if (s.connected) acts.push(`<button type="button" class="ph-btn" data-ph="signin"${busy ? ' disabled' : ''}>Sign in again</button>`);
     if (s.connected) acts.push(st.confirmDisconnect
       ? `<button type="button" class="ph-btn danger" data-ph="disconnect-yes">Disconnect this phone</button><button type="button" class="ph-btn" data-ph="disconnect-no">Keep</button>`
@@ -131,7 +140,7 @@
       case 'wifi': return api.setOption('wifi', !s.wifi);
       case 'charge': return api.setOption('charge', !s.charge);
       case 'permissions': return api.permissions();
-      case 'run': return api.runNow();
+      case 'run': return api.runNow().then(r => { st.queuedAt = Date.now(); return r; });
       case 'signin': return api.connect(server);
       case 'disconnect': st.confirmDisconnect = true; return null;
       case 'disconnect-no': st.confirmDisconnect = false; return null;
@@ -150,6 +159,6 @@
     return null;
   }
 
-  const lib = { VERSION, T, PUSH, client, detect, summary, html, act, ago, needsServer, esc };
+  const lib = { waitingFor, VERSION, T, PUSH, client, detect, summary, html, act, ago, needsServer, esc };
   if (typeof module === 'object' && module.exports) module.exports = lib; else root.PhotosPage = lib;
 })(typeof window !== 'undefined' ? window : globalThis);

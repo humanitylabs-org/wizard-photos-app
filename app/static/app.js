@@ -21,7 +21,7 @@
     st.error = '';
     const pending = P.act(st, api, what, extra);
     if (!pending) { render(); return; }
-    if (what !== 'albums' && what !== 'album') st.busy = true;
+    if (what !== 'albums' && what !== 'album') st.busy = what === 'run' ? 'run' : true;
     render();
     pending.catch(e => { st.error = e.timeout ? 'The Wizard OS app did not answer · try again' : e.message; }).finally(() => { st.busy = false; render(); });
   }
