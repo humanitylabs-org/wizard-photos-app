@@ -2,7 +2,7 @@
 wizard: 0.2
 id: photos
 name: Photos
-type: service
+type: view
 category: app
 version: 0.1.0-alpha.1
 summary: Alpha. Back up your phone's photos and videos to your own photo server, privately.
